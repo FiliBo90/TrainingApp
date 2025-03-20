@@ -1,49 +1,45 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>GymApp Versión Definitiva</title>
+  <title>GymApp Ultimate</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Tailwind CSS desde CDN -->
+  <!-- Tailwind CSS from CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Chart.js desde CDN -->
+  <!-- Chart.js from CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Plugin para mostrar etiquetas de datos en Chart.js -->
+  <!-- Plugin for data labels in Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
-  <!-- Estilos extra para hero, transiciones y acordeones -->
+  <!-- Extra styles for hero, transitions and accordions -->
   <style>
     .shadow-soft {
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
     .hero {
-      height: 280px;
+      height: 300px;
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1600&q=80');
       background-size: cover;
       background-position: center;
       position: relative;
-    }
-    .hero-overlay {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
     }
     .hero-title {
       position: relative;
       z-index: 1;
       color: #fff;
-      font-size: 2rem;
+      font-size: 3rem;
       font-weight: bold;
       text-align: center;
       padding: 1rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
     }
     button, .accordion-btn {
       transition: background-color 0.3s ease, transform 0.2s ease;
     }
     button:hover, .accordion-btn:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
     .accordion-content {
       transition: max-height 0.3s ease;
@@ -58,182 +54,173 @@
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
   <!-- Hero -->
-  <section 
-    class="hero flex items-center justify-center mb-4"
-    style="background-image: url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1600&q=80')">
-    <div class="hero-overlay"></div>
-    <h1 class="hero-title">GymApp Versión Definitiva</h1>
+  <section class="hero flex items-center justify-center mb-4">
+    <h1 class="hero-title">GymApp Ultimate</h1>
   </section>
 
-  <!-- Barra de navegación -->
+  <!-- Navigation Bar -->
   <header class="bg-white shadow-soft p-4 flex justify-center space-x-4">
-    <button id="btnRutina" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-      Rutina
+    <button id="btnWorkoutPlan" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+      Workout Plan
     </button>
-    <button id="btnProgreso" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-      Progreso
+    <button id="btnProgress" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+      Progress
     </button>
-    <button id="btnEditarRutina" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
-      Editar Rutinas
+    <button id="btnEditPlan" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+      Edit Workout Plan
     </button>
   </header>
 
-  <!-- Contenido principal -->
+  <!-- Main Content -->
   <main class="flex-1 p-4 max-w-5xl mx-auto w-full">
 
-    <!-- Sección Rutina -->
-    <section id="rutinaSection" class="mb-8">
+    <!-- Workout Plan Section -->
+    <section id="workoutPlanSection" class="mb-8">
       <div class="text-center mb-4">
-        <h2 class="text-2xl font-bold">Rutina de Entrenamiento</h2>
-        <p class="text-gray-600">Selecciona un mes para ver los días y ejercicios (acordeón).</p>
+        <h2 class="text-2xl font-bold">Workout Plan</h2>
+        <p class="text-gray-600">Select a month to view days and exercises (accordion).</p>
       </div>
 
-      <!-- Botones de Mes -->
+      <!-- Month Buttons -->
       <div class="flex flex-wrap justify-center mb-6 gap-2">
-        <button class="mesTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-mes="Mes 1">
-          Mes 1
+        <button class="monthTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-month="Month 1">
+          Month 1
         </button>
-        <button class="mesTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-mes="Mes 2">
-          Mes 2
+        <button class="monthTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-month="Month 2">
+          Month 2
         </button>
-        <button class="mesTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-mes="Mes 3">
-          Mes 3
+        <button class="monthTab px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600" data-month="Month 3">
+          Month 3
         </button>
       </div>
 
-      <div id="rutinaContent" class="max-w-3xl mx-auto"></div>
+      <div id="planContent" class="max-w-3xl mx-auto"></div>
     </section>
 
-    <!-- Sección Progreso -->
-    <section id="progresoSection" class="hidden">
-      <!-- Formulario Progreso -->
+    <!-- Progress Section -->
+    <section id="progressSection" class="hidden">
+      <!-- Progress Form -->
       <div class="bg-white shadow-soft rounded p-4 mb-6">
-        <h2 class="text-xl font-bold mb-2">Registrar Progreso 📈</h2>
+        <h2 class="text-xl font-bold mb-2">Record Progress 📈</h2>
         <form id="progressForm" class="space-y-4">
           <div>
-            <label class="block mb-1 font-semibold">Fecha:</label>
+            <label class="block mb-1 font-semibold">Date:</label>
             <input type="date" id="progressDate" class="w-full p-2 border rounded" required />
           </div>
           <div>
-            <label class="block mb-1 font-semibold">Mes:</label>
-            <!-- value = "Mes 1", "Mes 2", "Mes 3" EXACTAMENTE -->
-            <select id="progressMes" class="w-full p-2 border rounded">
-              <option value="">Seleccione Mes</option>
-              <option value="Mes 1">Mes 1 - Fase de Adaptación y Técnica</option>
-              <option value="Mes 2">Mes 2 - Fase de Progresión de Carga y Variación</option>
-              <option value="Mes 3">Mes 3 - Fase de Consolidación y Fuerza Máxima</option>
+            <label class="block mb-1 font-semibold">Month:</label>
+            <select id="progressMonth" class="w-full p-2 border rounded">
+              <option value="">Select Month</option>
+              <option value="Month 1">Month 1 - Adaptation & Technique Phase</option>
+              <option value="Month 2">Month 2 - Load Progression & Variation Phase</option>
+              <option value="Month 3">Month 3 - Consolidation & Maximum Strength Phase</option>
             </select>
           </div>
           <div>
-            <label class="block mb-1 font-semibold">Día:</label>
-            <select id="progressDia" class="w-full p-2 border rounded">
-              <option value="">Seleccione Día</option>
+            <label class="block mb-1 font-semibold">Day:</label>
+            <select id="progressDay" class="w-full p-2 border rounded">
+              <option value="">Select Day</option>
             </select>
           </div>
           <div>
-            <label class="block mb-1 font-semibold">Ejercicio:</label>
-            <select id="progressEjercicio" class="w-full p-2 border rounded">
-              <option value="">Seleccione Ejercicio</option>
+            <label class="block mb-1 font-semibold">Exercise:</label>
+            <select id="progressExercise" class="w-full p-2 border rounded">
+              <option value="">Select Exercise</option>
             </select>
           </div>
           <div>
-            <label class="block mb-1 font-semibold">Series (Reps y Peso):</label>
-            <div id="seriesContainer" class="space-y-2">
-              <!-- Filas de series -->
-            </div>
-            <button type="button" id="addSeriesBtn" class="mt-2 px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700">
-              ➕ Agregar Serie
+            <label class="block mb-1 font-semibold">Sets (Reps and Weight):</label>
+            <div id="setsContainer" class="space-y-2"></div>
+            <button type="button" id="addSetBtn" class="mt-2 px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700">
+              ➕ Add Set
             </button>
           </div>
           <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-            Guardar Progreso 💾
+            Save Progress 💾
           </button>
         </form>
       </div>
 
-      <!-- Historial -->
+      <!-- Progress History -->
       <div class="bg-white shadow-soft rounded p-4 mb-6">
-        <h2 class="text-xl font-bold mb-2">Historial de Progreso 📚</h2>
+        <h2 class="text-xl font-bold mb-2">Progress History 📚</h2>
         <button id="exportProgressBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 mb-4">
-          Exportar Historial
+          Export History
         </button>
-        <div id="progressList" class="space-y-2">
-          <!-- Se inyectan registros -->
-        </div>
+        <div id="progressList" class="space-y-2"></div>
       </div>
 
-      <!-- Gráfico -->
+      <!-- Progress Chart -->
       <div class="bg-white shadow-soft rounded p-4">
-        <h2 class="text-xl font-bold mb-2">Gráfico de Progresos 📊</h2>
+        <h2 class="text-xl font-bold mb-2">Progress Chart 📊</h2>
         <p class="text-sm text-gray-500 mb-4">
-          Selecciona el mes, día, ejercicio y la serie que deseas graficar.
+          Select the month, day, exercise, and set to chart.
         </p>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-          <!-- Asegurarse de que value sea EXACTAMENTE "Mes 1", "Mes 2", "Mes 3" -->
-          <select id="chartMes" class="p-2 border rounded">
-            <option value="">Seleccione Mes</option>
-            <option value="Mes 1">Mes 1 - Adaptación</option>
-            <option value="Mes 2">Mes 2 - Progresión</option>
-            <option value="Mes 3">Mes 3 - Consolidación</option>
+          <select id="chartMonth" class="p-2 border rounded">
+            <option value="">Select Month</option>
+            <option value="Month 1">Month 1 - Adaptation</option>
+            <option value="Month 2">Month 2 - Progression</option>
+            <option value="Month 3">Month 3 - Consolidation</option>
           </select>
-          <select id="chartDia" class="p-2 border rounded">
-            <option value="">Seleccione Día</option>
+          <select id="chartDay" class="p-2 border rounded">
+            <option value="">Select Day</option>
           </select>
-          <select id="chartEjercicio" class="p-2 border rounded">
-            <option value="">Seleccione Ejercicio</option>
+          <select id="chartExercise" class="p-2 border rounded">
+            <option value="">Select Exercise</option>
           </select>
-          <select id="chartSerie" class="p-2 border rounded">
-            <option value="">Serie</option>
-            <option value="1">Serie 1</option>
-            <option value="2">Serie 2</option>
-            <option value="3">Serie 3</option>
-            <option value="4">Serie 4</option>
-            <option value="5">Serie 5</option>
+          <select id="chartSet" class="p-2 border rounded">
+            <option value="">Set</option>
+            <option value="1">Set 1</option>
+            <option value="2">Set 2</option>
+            <option value="3">Set 3</option>
+            <option value="4">Set 4</option>
+            <option value="5">Set 5</option>
           </select>
         </div>
         <button id="updateChartBtn" class="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-          Actualizar Gráfico 🔄
+          Update Chart 🔄
         </button>
         <canvas id="progressChart" class="w-full h-64"></canvas>
       </div>
     </section>
 
-    <!-- Sección Editar Rutinas -->
-    <section id="editarRutinaSection" class="hidden p-4 max-w-5xl mx-auto w-full">
+    <!-- Edit Workout Plan Section -->
+    <section id="editPlanSection" class="hidden p-4 max-w-5xl mx-auto w-full">
       <div class="bg-white shadow-soft rounded p-4">
-        <h2 class="text-xl font-bold mb-2">Editar Rutinas</h2>
-        <p class="text-gray-600 mb-4">Agrega o elimina ejercicios de tu rutina sin editar código.</p>
+        <h2 class="text-xl font-bold mb-2">Edit Workout Plan</h2>
+        <p class="text-gray-600 mb-4">Add or remove exercises from your workout plan without editing code.</p>
         
         <div class="mb-4">
-          <label class="block mb-1 font-semibold">Mes:</label>
-          <select id="editMesSelect" class="w-full p-2 border rounded"></select>
+          <label class="block mb-1 font-semibold">Month:</label>
+          <select id="editMonthSelect" class="w-full p-2 border rounded"></select>
         </div>
         <div class="mb-4">
-          <label class="block mb-1 font-semibold">Día:</label>
-          <select id="editDiaSelect" class="w-full p-2 border rounded"></select>
+          <label class="block mb-1 font-semibold">Day:</label>
+          <select id="editDaySelect" class="w-full p-2 border rounded"></select>
         </div>
         <div class="mb-4">
-          <label class="block mb-1 font-semibold">Ejercicio:</label>
-          <input type="text" id="editExerciseName" class="w-full p-2 border rounded" placeholder="Nombre del ejercicio">
+          <label class="block mb-1 font-semibold">Exercise:</label>
+          <input type="text" id="editExerciseName" class="w-full p-2 border rounded" placeholder="Exercise name">
         </div>
         <div class="mb-4">
-          <label class="block mb-1 font-semibold">Detalle:</label>
-          <input type="text" id="editExerciseDetail" class="w-full p-2 border rounded" placeholder="Detalle del ejercicio">
+          <label class="block mb-1 font-semibold">Details:</label>
+          <input type="text" id="editExerciseDetail" class="w-full p-2 border rounded" placeholder="Exercise details">
         </div>
         <button id="addExerciseBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-4">
-          Agregar Ejercicio
+          Add Exercise
         </button>
 
-        <div id="editRoutineList" class="mb-4">
-          <!-- Se listarán los ejercicios del día seleccionado -->
+        <div id="editPlanList" class="mb-4">
+          <!-- List of exercises for the selected day -->
         </div>
 
         <div class="flex justify-end">
-          <button id="cancelEditRutina" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2">
-            Cancelar
+          <button id="cancelEditPlan" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 mr-2">
+            Cancel
           </button>
-          <button id="saveRoutineBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-            Guardar Cambios
+          <button id="savePlanBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            Save Changes
           </button>
         </div>
       </div>
@@ -241,16 +228,16 @@
   </main>
 
   <footer class="bg-white p-4 text-center text-gray-500">
-    <p>© 2025 - GymApp Versión Definitiva. Todos los derechos reservados.</p>
+    <p>© 2025 - GymApp Ultimate. All rights reserved.</p>
   </footer>
 
-  <!-- JavaScript principal -->
+  <!-- Main JavaScript -->
   <script>
-    // Registra el plugin de etiquetas de datos para Chart.js
+    // Register Chart.js DataLabels plugin
     Chart.register(ChartDataLabels);
 
     // =============================================================
-    // 1. Gestión de Rutinas Editable (Carga y Guardado en localStorage)
+    // 1. Editable Workout Plan Management (Load and Save in localStorage)
     // =============================================================
     let routine = loadRoutine();
     function loadRoutine() {
@@ -259,112 +246,112 @@
         return JSON.parse(stored);
       } else {
         const defaultRoutine = {
-          "Mes 1": {
-            "Día 1: PUSH": [
-              { nombre: "Calentamiento: Movilidad de hombros y pectorales", detalle: "5–10 min. Rotaciones, band pull-aparts, estiramientos dinámicos" },
-              { nombre: "Press de banca (Barra)", detalle: "4 x 5, Tempo: 2-0-1-0, Descanso: 2–3 min. Alternativa: Press con mancuernas" },
-              { nombre: "Press militar (Barra)", detalle: "4 x 5, Tempo: 2-0-1-0, Descanso: 2–3 min. Alternativa: Press Arnold con mancuernas" },
-              { nombre: "Press inclinado (Barra o mancuernas)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 90 seg. Alternativa: Flexiones inclinadas" },
-              { nombre: "Elevaciones laterales (estilo Poliquin)", detalle: "3 x 12–14, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Extensión de tríceps (barra EZ o mancuerna)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 60 seg. Alternativa: Fondos asistidos" },
-              { nombre: "Core: Plancha", detalle: "3 x 30–45 seg, Descanso: 60 seg" }
+          "Month 1": {
+            "Day 1: PUSH": [
+              { nombre: "Warm-up: Shoulder & Chest Mobility", detalle: "5–10 min. Rotations, band pull-aparts, dynamic stretches" },
+              { nombre: "Barbell Bench Press", detalle: "4 x 5, Tempo: 2-0-1-0, Rest: 2–3 min. Alternative: Dumbbell Press" },
+              { nombre: "Barbell Overhead Press", detalle: "4 x 5, Tempo: 2-0-1-0, Rest: 2–3 min. Alternative: Arnold Press with Dumbbells" },
+              { nombre: "Incline Press (Barbell or Dumbbells)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec. Alternative: Incline Push-ups" },
+              { nombre: "Lateral Raises (Poliquin Style)", detalle: "3 x 12–14, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Triceps Extension (EZ-bar or Dumbbell)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec. Alternative: Assisted Dips" },
+              { nombre: "Core: Plank", detalle: "3 x 30–45 sec, Rest: 60 sec" }
             ],
-            "Día 2: PULL": [
-              { nombre: "Calentamiento: Movilidad de hombros y espalda", detalle: "5–10 min. Rotaciones, band pull-aparts" },
-              { nombre: "Dominadas (asistidas o libres)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Descanso: 2 min. Alternativa: Jalón en polea" },
-              { nombre: "Remo con barra (Barbell Row)", detalle: "4 x 5–8, Tempo: 2-0-1-0, Descanso: 2 min" },
-              { nombre: "Face Pulls con banda", detalle: "3 x 10–12, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Curl de bíceps con barra EZ", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Reverse Flys con mancuernas", detalle: "3 x 10–12, Tempo: 2-0-1-0, Descanso: 60 seg" }
+            "Day 2: PULL": [
+              { nombre: "Warm-up: Shoulder & Back Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
+              { nombre: "Pull-ups (assisted or free)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min. Alternative: Lat Pulldown" },
+              { nombre: "Barbell Row", detalle: "4 x 5–8, Tempo: 2-0-1-0, Rest: 2 min" },
+              { nombre: "Band Face Pulls", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "EZ-bar Bicep Curl", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Dumbbell Reverse Flys", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
-            "Día 3: LEGS": [
-              { nombre: "Calentamiento: Movilidad, foam rolling y activación", detalle: "5–10 min. Incluye puentes de glúteos" },
-              { nombre: "Sentadilla con caja (Box Squat)", detalle: "4 x 5–8, Tempo: 3-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Hip Thrust", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Peso muerto rumano", detalle: "3 x 6–8, Tempo: 3-0-1-0, Descanso: 2 min" },
-              { nombre: "Bulgarian Split Squat", detalle: "3 x 8 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Estabilidad: Band Walks o Clamshells", detalle: "3 x 15 pasos por lado, Descanso: 60 seg" },
-              { nombre: "Elevación de gemelos", detalle: "3 x 12–15, Tempo: 2-0-1-0, Descanso: 60 seg" }
+            "Day 3: LEGS": [
+              { nombre: "Warm-up: Mobility, Foam Rolling & Activation", detalle: "5–10 min. Includes glute bridges" },
+              { nombre: "Box Squat", detalle: "4 x 5–8, Tempo: 3-0-1-0, Rest: 2–3 min" },
+              { nombre: "Hip Thrust", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Romanian Deadlift", detalle: "3 x 6–8, Tempo: 3-0-1-0, Rest: 2 min" },
+              { nombre: "Bulgarian Split Squat", detalle: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Stability: Band Walks or Clamshells", detalle: "3 x 15 steps per side, Rest: 60 sec" },
+              { nombre: "Calf Raises", detalle: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
-            "Día 4: TOTAL BODY": [
-              { nombre: "Calentamiento: Movilidad general y activación", detalle: "5–10 min" },
-              { nombre: "Landmine Squat to Press", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Kettlebell Swing", detalle: "3 x 10, Ejecución explosiva, Descanso: 90 seg" },
-              { nombre: "Single-Leg Romanian Deadlift", detalle: "3 x 8 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Pallof Press", detalle: "3 x 10 (cada lado), Tempo: 2-0-2-0, Descanso: 60 seg" },
-              { nombre: "Opcional: Box Step Jump", detalle: "2 x 5 (cada pierna), Descanso: 60 seg" }
+            "Day 4: TOTAL BODY": [
+              { nombre: "Warm-up: General Mobility & Activation", detalle: "5–10 min" },
+              { nombre: "Landmine Squat to Press", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { nombre: "Kettlebell Swing", detalle: "3 x 10, Explosive execution, Rest: 90 sec" },
+              { nombre: "Single-Leg Romanian Deadlift", detalle: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Pallof Press", detalle: "3 x 10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
+              { nombre: "Optional: Box Step Jump", detalle: "2 x 5 (each leg), Rest: 60 sec" }
             ]
           },
-          "Mes 2": {
-            "Día 1: PUSH": [
-              { nombre: "Calentamiento: Movilidad hombros y pectorales", detalle: "5–10 min. Rotaciones, band pull-aparts" },
-              { nombre: "Press de banca con mancuernas", detalle: "4 x 5–6, Tempo: 2-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Press militar (Barra o mancuernas)", detalle: "4 x 5–6, Tempo: 2-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Press inclinado con mancuernas", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Elevaciones laterales (con mancuernas)", detalle: "3 x 12–14, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Extensión de tríceps en banco (con mancuerna)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Core: Plancha lateral", detalle: "3 x 30–45 seg, Descanso: 60 seg" }
+          "Month 2": {
+            "Day 1: PUSH": [
+              { nombre: "Warm-up: Shoulder & Chest Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
+              { nombre: "Dumbbell Bench Press", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { nombre: "Overhead Press (Barbell or Dumbbells)", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { nombre: "Incline Dumbbell Press", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Dumbbell Lateral Raises", detalle: "3 x 12–14, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Bench Triceps Extension (Dumbbell)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Core: Side Plank", detalle: "3 x 30–45 sec, Rest: 60 sec" }
             ],
-            "Día 2: PULL": [
-              { nombre: "Calentamiento: Movilidad de hombros y espalda", detalle: "5–10 min. Rotaciones, band pull-aparts" },
-              { nombre: "Dominadas (variación agarre supino o mixto)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Descanso: 2 min" },
-              { nombre: "Remo con mancuerna a un brazo (apoyado en banco)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Descanso: 2 min" },
-              { nombre: "Cable Row con agarre amplio (si es posible)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Curl de bíceps alterno con mancuernas", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Face Pulls con banda (variando el ángulo)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Descanso: 60 seg" }
+            "Day 2: PULL": [
+              { nombre: "Warm-up: Shoulder & Back Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
+              { nombre: "Pull-ups (supinated or mixed grip)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min" },
+              { nombre: "Single-Arm Dumbbell Row (bench-supported)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min" },
+              { nombre: "Wide-Grip Cable Row (if available)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Alternating Dumbbell Bicep Curl", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Face Pulls with Band (varying angle)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
-            "Día 3: LEGS": [
-              { nombre: "Calentamiento: Movilidad, foam rolling y activación", detalle: "5–10 min. Incluye puentes de glúteos" },
-              { nombre: "Front Squat o Sentadilla frontal", detalle: "4 x 5–8, Tempo: 3-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Hip Thrust (Barra o mancuerna)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Peso muerto rumano (Barra o mancuerna)", detalle: "3 x 6–8, Tempo: 3-0-1-0, Descanso: 2 min" },
-              { nombre: "Zancadas caminando", detalle: "3 x 8–10 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Estabilidad: Clamshells con banda", detalle: "3 x 15 pasos por lado, Descanso: 60 seg" },
-              { nombre: "Elevación de gemelos (de pie o en prensa)", detalle: "3 x 12–15, Tempo: 2-0-1-0, Descanso: 60 seg" }
+            "Day 3: LEGS": [
+              { nombre: "Warm-up: Mobility, Foam Rolling & Activation", detalle: "5–10 min. Includes glute bridges" },
+              { nombre: "Front Squat", detalle: "4 x 5–8, Tempo: 3-0-1-0, Rest: 2–3 min" },
+              { nombre: "Hip Thrust (Barbell or Dumbbell)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Romanian Deadlift (Barbell or Dumbbell)", detalle: "3 x 6–8, Tempo: 3-0-1-0, Rest: 2 min" },
+              { nombre: "Walking Lunges", detalle: "3 x 8–10 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Stability: Band Clamshells", detalle: "3 x 15 steps per side, Rest: 60 sec" },
+              { nombre: "Calf Raises (standing or on press)", detalle: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
-            "Día 4: TOTAL BODY": [
-              { nombre: "Calentamiento: Movilidad general y activación", detalle: "5–10 min" },
-              { nombre: "Dumbbell Thruster (con mancuernas)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Kettlebell Swing (variando rango de movimiento)", detalle: "3 x 10, Explosivo / 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Single-Leg Glute Bridge con mancuerna", detalle: "3 x 8 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Pallof Press (con banda o polea)", detalle: "3 x 10 (cada lado), Tempo: 2-0-2-0, Descanso: 60 seg" },
-              { nombre: "Opcional: Step-ups dinámicos", detalle: "2 x 6–8 (cada pierna), Descanso: 60 seg" }
+            "Day 4: TOTAL BODY": [
+              { nombre: "Warm-up: General Mobility & Activation", detalle: "5–10 min" },
+              { nombre: "Dumbbell Thruster", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { nombre: "Kettlebell Swing (varying range)", detalle: "3 x 10, Explosive / Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Single-Leg Glute Bridge (Dumbbell)", detalle: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Pallof Press (with band or cable)", detalle: "3 x 10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
+              { nombre: "Optional: Dynamic Step-ups", detalle: "2 x 6–8 (each leg), Rest: 60 sec" }
             ]
           },
-          "Mes 3": {
-            "Día 1: PUSH": [
-              { nombre: "Calentamiento: Movilidad hombros y pectorales", detalle: "5–10 min. Rotaciones, band pull-aparts" },
-              { nombre: "Press de banca (Barra) – carga alta", detalle: "4 x 4–5, Tempo: 2-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Press militar (Barra) – carga alta", detalle: "4 x 4–5, Tempo: 2-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Press inclinado con barra o mancuernas", detalle: "3 x 5–6, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Elevaciones laterales (puedes variar ángulo)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Fondos en paralelas (enfocados en tríceps)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Core: Plancha frontal y lateral (alternar)", detalle: "3 x 30–45 seg, Descanso: 60 seg" }
+          "Month 3": {
+            "Day 1: PUSH": [
+              { nombre: "Warm-up: Shoulder & Chest Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
+              { nombre: "Barbell Bench Press – Heavy", detalle: "4 x 4–5, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { nombre: "Barbell Overhead Press – Heavy", detalle: "4 x 4–5, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { nombre: "Incline Press (Barbell or Dumbbells)", detalle: "3 x 5–6, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Lateral Raises (angle variation allowed)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Dips (triceps-focused)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Core: Front & Side Plank (alternating)", detalle: "3 x 30–45 sec, Rest: 60 sec" }
             ],
-            "Día 2: PULL": [
-              { nombre: "Calentamiento: Movilidad hombros y espalda", detalle: "5–10 min. Rotaciones, band pull-aparts" },
-              { nombre: "Dominadas (preferiblemente libres, variando agarres)", detalle: "4 x 5–6, Tempo: 2-0-1-0, Descanso: 2 min" },
-              { nombre: "T-Bar Row o Remo en máquina con barra en T", detalle: "4 x 5–6, Tempo: 2-0-1-0, Descanso: 2 min" },
-              { nombre: "Face Pulls (con mayor énfasis en la contracción)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Curl de bíceps con barra EZ", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 60 seg" },
-              { nombre: "Remo invertido en TRX o con barra fija (en ángulo)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Descanso: 60 seg" }
+            "Day 2: PULL": [
+              { nombre: "Warm-up: Shoulder & Back Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
+              { nombre: "Pull-ups (preferably free, varying grips)", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2 min" },
+              { nombre: "T-Bar Row or Machine Row with T-Bar", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2 min" },
+              { nombre: "Face Pulls (with extra contraction emphasis)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "EZ-bar Bicep Curl", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { nombre: "Inverted Row on TRX or fixed bar (angled)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
-            "Día 3: LEGS": [
-              { nombre: "Calentamiento: Movilidad, foam rolling y activación", detalle: "5–10 min. Incluye puentes de glúteos" },
-              { nombre: "Front Squat o Hack Squat (según disponibilidad)", detalle: "4 x 4–6, Tempo: 3-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Hip Thrust (Barra, con mayor carga)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Peso muerto rumano (Barra o mancuerna, controlado)", detalle: "3 x 5–6, Tempo: 3-0-1-0, Descanso: 2 min" },
-              { nombre: "Zancadas reversas o walking lunges", detalle: "3 x 6–8 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Estabilidad: Clamshells con banda o lateral band walks", detalle: "3 x 15 pasos por lado, Descanso: 60 seg" },
-              { nombre: "Elevación de gemelos (de pie o hack)", detalle: "3 x 12–15, Tempo: 2-0-1-0, Descanso: 60 seg" }
+            "Day 3: LEGS": [
+              { nombre: "Warm-up: Mobility, Foam Rolling & Activation", detalle: "5–10 min. Includes glute bridges" },
+              { nombre: "Front Squat or Hack Squat (depending on availability)", detalle: "4 x 4–6, Tempo: 3-0-1-0, Rest: 2–3 min" },
+              { nombre: "Hip Thrust (Barbell, heavy)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Romanian Deadlift (Barbell or Dumbbell, controlled)", detalle: "3 x 5–6, Tempo: 3-0-1-0, Rest: 2 min" },
+              { nombre: "Reverse Lunges or Walking Lunges", detalle: "3 x 6–8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Stability: Band Clamshells or Lateral Band Walks", detalle: "3 x 15 steps per side, Rest: 60 sec" },
+              { nombre: "Calf Raises (standing or hack)", detalle: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
-            "Día 4: TOTAL BODY": [
-              { nombre: "Calentamiento: Movilidad general y activación", detalle: "5–10 min" },
-              { nombre: "Dumbbell Push Press (con mancuernas) o Push Press (Barra)", detalle: "3 x 4–6, Tempo: 2-0-1-0, Descanso: 2–3 min" },
-              { nombre: "Kettlebell Swing o Alternativa: Hip Hinge con mancuerna", detalle: "3 x 8–10, Explosivo / 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Step-up con peso (sobre banco o plataforma)", detalle: "3 x 6–8 (cada pierna), Tempo: 2-0-1-0, Descanso: 90 seg" },
-              { nombre: "Pallof Press (con banda o polea, incrementa resistencia)", detalle: "3 x 8–10 (cada lado), Tempo: 2-0-2-0, Descanso: 60 seg" },
-              { nombre: "Opcional: Saltos pliométricos controlados", detalle: "2 x 4–6 (cada pierna), Descanso: 60 seg" }
+            "Day 4: TOTAL BODY": [
+              { nombre: "Warm-up: General Mobility & Activation", detalle: "5–10 min" },
+              { nombre: "Dumbbell Push Press or Barbell Push Press", detalle: "3 x 4–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { nombre: "Kettlebell Swing or Alternative: Dumbbell Hip Hinge", detalle: "3 x 8–10, Explosive / Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Weighted Step-ups (on bench or platform)", detalle: "3 x 6–8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { nombre: "Pallof Press (with band or cable, increased resistance)", detalle: "3 x 8–10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
+              { nombre: "Optional: Controlled Plyometric Jumps", detalle: "2 x 4–6 (each leg), Rest: 60 sec" }
             ]
           }
         };
@@ -377,33 +364,33 @@
     }
 
     // =============================================================
-    // 2. MOSTRAR RUTINA (programación)
+    // 2. Display Workout Plan (Programming)
     // =============================================================
-    const mesTabs = document.querySelectorAll('.mesTab');
-    const rutinaContent = document.getElementById('rutinaContent');
-    mesTabs.forEach(tab => {
+    const monthTabs = document.querySelectorAll('.monthTab');
+    const planContent = document.getElementById('planContent');
+    monthTabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        const mes = tab.getAttribute('data-mes');
-        displayRutina(mes);
+        const month = tab.getAttribute('data-month');
+        displayPlan(month);
       });
     });
-    function displayRutina(mes) {
-      const dias = Object.keys(routine[mes] || {});
-      let html = `<h3 class="text-xl font-bold mb-2 text-center">Rutina ${mes}</h3>`;
-      dias.forEach(dia => {
+    function displayPlan(month) {
+      const days = Object.keys(routine[month] || {});
+      let html = `<h3 class="text-xl font-bold mb-2 text-center">Workout Plan: ${month}</h3>`;
+      days.forEach(day => {
         html += `
           <div class="bg-white shadow-soft rounded mb-4">
             <button class="w-full text-left px-4 py-2 font-semibold accordion-btn bg-gray-100 hover:bg-gray-200"
-                    onclick="toggleDay('${mes}','${dia}', this)">
+                    onclick="toggleDay('${month}','${day}', this)">
               <div class="flex justify-between items-center">
-                <span>${dia}</span>
+                <span>${day}</span>
                 <span class="text-xl">➕</span>
               </div>
             </button>
-            <div class="accordion-content px-4 pb-2" id="content-${mes}-${dia.replace(/[^a-zA-Z0-9]/g,'')}">
+            <div class="accordion-content px-4 pb-2" id="content-${month}-${day.replace(/[^a-zA-Z0-9]/g,'')}">
         `;
-        const ejercicios = routine[mes][dia];
-        ejercicios.forEach(e => {
+        const exercises = routine[month][day];
+        exercises.forEach(e => {
           html += `
             <div class="my-2">
               <p class="font-semibold">${e.nombre}</p>
@@ -413,11 +400,11 @@
         });
         html += `</div></div>`;
       });
-      rutinaContent.innerHTML = html;
+      planContent.innerHTML = html;
     }
-    function toggleDay(mes, dia, btn) {
+    function toggleDay(month, day, btn) {
       const icon = btn.querySelector('span.text-xl');
-      const contentId = `content-${mes}-${dia.replace(/[^a-zA-Z0-9]/g,'')}`;
+      const contentId = `content-${month}-${day.replace(/[^a-zA-Z0-9]/g,'')}`;
       const content = document.getElementById(contentId);
       if (content.classList.contains('show')) {
         content.classList.remove('show');
@@ -427,199 +414,198 @@
         icon.textContent = '➖';
       }
     }
-    displayRutina("Mes 1");
+    displayPlan("Month 1");
 
     // =============================================================
-    // 3. NAVEGACIÓN: Rutina / Progreso / Editar Rutinas
+    // 3. Navigation: Workout Plan / Progress / Edit Plan
     // =============================================================
-    const btnRutina = document.getElementById('btnRutina');
-    const btnProgreso = document.getElementById('btnProgreso');
-    const btnEditarRutina = document.getElementById('btnEditarRutina');
-    const rutinaSection = document.getElementById('rutinaSection');
-    const progresoSection = document.getElementById('progresoSection');
-    const editarRutinaSection = document.getElementById('editarRutinaSection');
-    btnRutina.addEventListener('click', () => {
-      rutinaSection.classList.remove('hidden');
-      progresoSection.classList.add('hidden');
-      editarRutinaSection.classList.add('hidden');
+    const btnWorkoutPlan = document.getElementById('btnWorkoutPlan');
+    const btnProgress = document.getElementById('btnProgress');
+    const btnEditPlan = document.getElementById('btnEditPlan');
+    const workoutPlanSection = document.getElementById('workoutPlanSection');
+    const progressSection = document.getElementById('progressSection');
+    const editPlanSection = document.getElementById('editPlanSection');
+    btnWorkoutPlan.addEventListener('click', () => {
+      workoutPlanSection.classList.remove('hidden');
+      progressSection.classList.add('hidden');
+      editPlanSection.classList.add('hidden');
     });
-    btnProgreso.addEventListener('click', () => {
-      rutinaSection.classList.add('hidden');
-      progresoSection.classList.remove('hidden');
-      editarRutinaSection.classList.add('hidden');
+    btnProgress.addEventListener('click', () => {
+      workoutPlanSection.classList.add('hidden');
+      progressSection.classList.remove('hidden');
+      editPlanSection.classList.add('hidden');
       populateProgressDay();
     });
-    btnEditarRutina.addEventListener('click', () => {
-      rutinaSection.classList.add('hidden');
-      progresoSection.classList.add('hidden');
-      editarRutinaSection.classList.remove('hidden');
-      populateEditMes();
+    btnEditPlan.addEventListener('click', () => {
+      workoutPlanSection.classList.add('hidden');
+      progressSection.classList.add('hidden');
+      editPlanSection.classList.remove('hidden');
+      populateEditMonth();
     });
 
     // =============================================================
-    // 4. SECCIÓN EDITAR RUTINAS (INTERFAZ AMIGABLE)
+    // 4. Edit Workout Plan Section (User-Friendly Interface)
     // =============================================================
-    const editMesSelect = document.getElementById('editMesSelect');
-    const editDiaSelect = document.getElementById('editDiaSelect');
+    const editMonthSelect = document.getElementById('editMonthSelect');
+    const editDaySelect = document.getElementById('editDaySelect');
     const editExerciseName = document.getElementById('editExerciseName');
     const editExerciseDetail = document.getElementById('editExerciseDetail');
     const addExerciseBtn = document.getElementById('addExerciseBtn');
-    const editRoutineList = document.getElementById('editRoutineList');
-    const cancelEditRutina = document.getElementById('cancelEditRutina');
-    const saveRoutineBtn = document.getElementById('saveRoutineBtn');
+    const editPlanList = document.getElementById('editPlanList');
+    const cancelEditPlan = document.getElementById('cancelEditPlan');
+    const savePlanBtn = document.getElementById('savePlanBtn');
 
-    function populateEditMes() {
-      editMesSelect.innerHTML = '';
-      for (let mes in routine) {
+    function populateEditMonth() {
+      editMonthSelect.innerHTML = '';
+      for (let month in routine) {
         let option = document.createElement('option');
-        option.value = mes;
-        option.textContent = mes;
-        editMesSelect.appendChild(option);
+        option.value = month;
+        option.textContent = month;
+        editMonthSelect.appendChild(option);
       }
-      populateEditDia();
+      populateEditDay();
     }
-    function populateEditDia() {
-      let mes = editMesSelect.value;
-      editDiaSelect.innerHTML = '';
-      if(routine[mes]) {
-        for(let dia in routine[mes]) {
+    function populateEditDay() {
+      let month = editMonthSelect.value;
+      editDaySelect.innerHTML = '';
+      if(routine[month]) {
+        for(let day in routine[month]) {
           let option = document.createElement('option');
-          option.value = dia;
-          option.textContent = dia;
-          editDiaSelect.appendChild(option);
+          option.value = day;
+          option.textContent = day;
+          editDaySelect.appendChild(option);
         }
       }
-      displayEditRoutineList();
+      displayEditPlanList();
     }
-    function displayEditRoutineList() {
-      let mes = editMesSelect.value;
-      let dia = editDiaSelect.value;
-      editRoutineList.innerHTML = '';
-      if(routine[mes] && routine[mes][dia]) {
-        routine[mes][dia].forEach((exercise, index) => {
+    function displayEditPlanList() {
+      let month = editMonthSelect.value;
+      let day = editDaySelect.value;
+      editPlanList.innerHTML = '';
+      if(routine[month] && routine[month][day]) {
+        routine[month][day].forEach((exercise, index) => {
           let div = document.createElement('div');
           div.className = 'flex justify-between items-center border p-2 mb-2';
           div.innerHTML = `<div>
                               <p class="font-semibold">${exercise.nombre}</p>
                               <p class="text-sm text-gray-600">${exercise.detalle}</p>
                            </div>
-                           <button class="bg-red-500 text-white px-2 rounded hover:bg-red-600" onclick="deleteExercise('${mes}', '${dia}', ${index})">Eliminar</button>`;
-          editRoutineList.appendChild(div);
+                           <button class="bg-red-500 text-white px-2 rounded hover:bg-red-600" onclick="deleteExercise('${month}', '${day}', ${index})">Delete</button>`;
+          editPlanList.appendChild(div);
         });
       }
     }
-    // Para que la función sea accesible en el onclick
-    window.deleteExercise = function(mes, dia, index) {
-      routine[mes][dia].splice(index, 1);
-      displayEditRoutineList();
+    window.deleteExercise = function(month, day, index) {
+      routine[month][day].splice(index, 1);
+      displayEditPlanList();
     }
-    editMesSelect.addEventListener('change', populateEditDia);
-    editDiaSelect.addEventListener('change', displayEditRoutineList);
+    editMonthSelect.addEventListener('change', populateEditDay);
+    editDaySelect.addEventListener('change', displayEditPlanList);
     addExerciseBtn.addEventListener('click', () => {
-      let mes = editMesSelect.value;
-      let dia = editDiaSelect.value;
-      let nombre = editExerciseName.value.trim();
-      let detalle = editExerciseDetail.value.trim();
-      if(!nombre || !detalle) {
-        alert("Ingresa nombre y detalle del ejercicio.");
+      let month = editMonthSelect.value;
+      let day = editDaySelect.value;
+      let name = editExerciseName.value.trim();
+      let detail = editExerciseDetail.value.trim();
+      if(!name || !detail) {
+        alert("Please enter both exercise name and details.");
         return;
       }
-      if(!routine[mes]) {
-        routine[mes] = {};
+      if(!routine[month]) {
+        routine[month] = {};
       }
-      if(!routine[mes][dia]) {
-        routine[mes][dia] = [];
+      if(!routine[month][day]) {
+        routine[month][day] = [];
       }
-      routine[mes][dia].push({nombre, detalle});
+      routine[month][day].push({nombre: name, detalle: detail});
       editExerciseName.value = '';
       editExerciseDetail.value = '';
-      displayEditRoutineList();
+      displayEditPlanList();
     });
-    saveRoutineBtn.addEventListener('click', () => {
+    savePlanBtn.addEventListener('click', () => {
       saveRoutine();
-      alert("Rutinas actualizadas exitosamente.");
-      displayRutina("Mes 1");
+      alert("Workout plan updated successfully.");
+      displayPlan("Month 1");
     });
-    cancelEditRutina.addEventListener('click', () => {
-      editarRutinaSection.classList.add('hidden');
-      rutinaSection.classList.remove('hidden');
+    cancelEditPlan.addEventListener('click', () => {
+      editPlanSection.classList.add('hidden');
+      workoutPlanSection.classList.remove('hidden');
     });
 
     // =============================================================
-    // 5. FORMULARIO DE PROGRESO
+    // 5. Progress Form
     // =============================================================
     const progressForm = document.getElementById('progressForm');
     const progressDate = document.getElementById('progressDate');
-    const progressMesSelect = document.getElementById('progressMes');
-    const progressDiaSelect = document.getElementById('progressDia');
-    const progressEjercicioSelect = document.getElementById('progressEjercicio');
-    const seriesContainer = document.getElementById('seriesContainer');
-    progressMesSelect.addEventListener('change', populateProgressDay);
-    progressDiaSelect.addEventListener('change', populateProgressEjercicio);
+    const progressMonth = document.getElementById('progressMonth');
+    const progressDay = document.getElementById('progressDay');
+    const progressExercise = document.getElementById('progressExercise');
+    const setsContainer = document.getElementById('setsContainer');
+    progressMonth.addEventListener('change', populateProgressDay);
+    progressDay.addEventListener('change', populateProgressExercise);
     function populateProgressDay() {
-      progressDiaSelect.innerHTML = '<option value="">Seleccione Día</option>';
-      progressEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
-      const mes = progressMesSelect.value;
-      if (routine[mes]) {
-        const dias = Object.keys(routine[mes]);
-        dias.forEach(d => {
+      progressDay.innerHTML = '<option value="">Select Day</option>';
+      progressExercise.innerHTML = '<option value="">Select Exercise</option>';
+      const month = progressMonth.value;
+      if (routine[month]) {
+        const days = Object.keys(routine[month]);
+        days.forEach(d => {
           const option = document.createElement('option');
           option.value = d;
           option.textContent = d;
-          progressDiaSelect.appendChild(option);
+          progressDay.appendChild(option);
         });
       }
     }
-    function populateProgressEjercicio() {
-      progressEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
-      const mes = progressMesSelect.value;
-      const dia = progressDiaSelect.value;
-      if (mes && dia && routine[mes] && routine[mes][dia]) {
-        routine[mes][dia].forEach(e => {
+    function populateProgressExercise() {
+      progressExercise.innerHTML = '<option value="">Select Exercise</option>';
+      const month = progressMonth.value;
+      const day = progressDay.value;
+      if (month && day && routine[month] && routine[month][day]) {
+        routine[month][day].forEach(e => {
           const option = document.createElement('option');
           option.value = e.nombre;
           option.textContent = e.nombre;
-          progressEjercicioSelect.appendChild(option);
+          progressExercise.appendChild(option);
         });
       }
     }
-    function addSeriesRow() {
+    function addSetRow() {
       const row = document.createElement('div');
       row.className = 'flex space-x-2';
       row.innerHTML = `
         <input type="number" placeholder="Reps" class="w-1/2 p-2 border rounded" required>
-        <input type="number" placeholder="Peso (kg)" class="w-1/2 p-2 border rounded" required>
+        <input type="number" placeholder="Weight (kg)" class="w-1/2 p-2 border rounded" required>
         <button type="button" class="bg-red-500 text-white px-2 rounded hover:bg-red-600">🗑</button>
       `;
       const delBtn = row.querySelector('button');
       delBtn.addEventListener('click', () => row.remove());
-      seriesContainer.appendChild(row);
+      setsContainer.appendChild(row);
     }
-    document.getElementById('addSeriesBtn').addEventListener('click', addSeriesRow);
-    // Fila inicial
-    addSeriesRow();
+    document.getElementById('addSetBtn').addEventListener('click', addSetRow);
+    // Initial row
+    addSetRow();
     progressForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const dateVal = progressDate.value;
-      const mesVal = progressMesSelect.value;
-      const diaVal = progressDiaSelect.value;
-      const ejVal = progressEjercicioSelect.value;
-      if (!dateVal || !mesVal || !diaVal || !ejVal) {
-        alert("Por favor completa la Fecha, Mes, Día y Ejercicio.");
+      const monthVal = progressMonth.value;
+      const dayVal = progressDay.value;
+      const exerciseVal = progressExercise.value;
+      if (!dateVal || !monthVal || !dayVal || !exerciseVal) {
+        alert("Please complete Date, Month, Day, and Exercise.");
         return;
       }
-      const rows = seriesContainer.querySelectorAll('div.flex');
-      let series = [];
+      const rows = setsContainer.querySelectorAll('div.flex');
+      let sets = [];
       rows.forEach((row, i) => {
         const inputs = row.querySelectorAll('input');
         const reps = inputs[0].value;
-        const peso = inputs[1].value;
-        if (reps && peso) {
-          series.push({ serie: i+1, reps, peso });
+        const weight = inputs[1].value;
+        if (reps && weight) {
+          sets.push({ serie: i+1, reps, peso: weight });
         }
       });
-      if (series.length === 0) {
-        alert("Agrega al menos una serie válida.");
+      if (sets.length === 0) {
+        alert("Please add at least one valid set.");
         return;
       }
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
@@ -628,24 +614,24 @@
         existingDay = { date: dateVal, workouts: [] };
         progress.push(existingDay);
       }
-      existingDay.workouts.push({ mes: mesVal, dia: diaVal, ejercicio: ejVal, series });
+      existingDay.workouts.push({ mes: monthVal, dia: dayVal, ejercicio: exerciseVal, series: sets });
       localStorage.setItem('gymProgress', JSON.stringify(progress));
-      // Reset del formulario
+      // Reset form
       progressForm.reset();
-      seriesContainer.innerHTML = '';
-      addSeriesRow();
+      setsContainer.innerHTML = '';
+      addSetRow();
       loadProgressList();
       updateChart();
     });
 
     // =============================================================
-    // 6. HISTORIAL DE PROGRESO CON OPCIÓN DE BORRAR
+    // 6. Progress History with Delete Option
     // =============================================================
     function loadProgressList() {
       const progressList = document.getElementById('progressList');
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
       if (progress.length === 0) {
-        progressList.innerHTML = "<p class='text-gray-500'>No hay entradas registradas aún.</p>";
+        progressList.innerHTML = "<p class='text-gray-500'>No entries recorded yet.</p>";
         return;
       }
       progress.sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -656,7 +642,7 @@
             <div class="font-bold cursor-pointer flex items-center" onclick="toggleHistory(this.nextElementSibling)">
               <img src="https://cdn-icons-png.flaticon.com/512/3004/3004143.png"
                    class="w-5 h-5 mr-2" alt="calendar icon" />
-              Fecha: ${day.date} (Total entrenos: ${day.workouts.length})
+              Date: ${day.date} (Total workouts: ${day.workouts.length})
             </div>
             <div class="ml-6 hidden">
         `;
@@ -664,16 +650,16 @@
           html += `
             <div class="bg-gray-50 rounded p-2 my-2 flex justify-between items-center">
               <div>
-                <p class="font-semibold text-sm">Entreno #${i+1}: ${w.mes}, ${w.dia}, Ejercicio: ${w.ejercicio}</p>
+                <p class="font-semibold text-sm">Workout #${i+1}: ${w.mes}, ${w.dia}, Exercise: ${w.ejercicio}</p>
                 <ul class="list-disc ml-4 text-sm">
           `;
           w.series.forEach(s => {
-            html += `<li>Serie ${s.serie}: ${s.reps} reps, ${s.peso} kg</li>`;
+            html += `<li>Set ${s.serie}: ${s.reps} reps, ${s.peso} kg</li>`;
           });
           html += `</ul>
               </div>
               <button onclick="deleteWorkout('${day.date}', ${i})" class="bg-red-500 text-white px-2 rounded hover:bg-red-600">
-                Eliminar
+                Delete
               </button>
             </div>
           `;
@@ -700,14 +686,14 @@
     }
     loadProgressList();
 
-    // Botón para exportar historial como CSV
+    // Export progress history as CSV (for Excel)
     document.getElementById('exportProgressBtn').addEventListener('click', () => {
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
-      let csv = "Fecha,Mes,Día,Ejercicio,Serie,Reps,Peso\n";
+      let csv = "Date,Month,Day,Exercise,Set,Reps,Weight\n";
       progress.forEach(day => {
         day.workouts.forEach(workout => {
-          workout.series.forEach(series => {
-            csv += `"${day.date}","${workout.mes}","${workout.dia}","${workout.ejercicio}",${series.serie},${series.reps},${series.peso}\n`;
+          workout.series.forEach(set => {
+            csv += `"${day.date}","${workout.mes}","${workout.dia}","${workout.ejercicio}",${set.serie},${set.reps},${set.peso}\n`;
           });
         });
       });
@@ -722,39 +708,39 @@
     });
 
     // =============================================================
-    // 7. GRÁFICA (Chart.js) CON DOS LÍNEAS: Peso y Reps, con etiquetas de datos
+    // 7. Progress Chart (Chart.js) with Two Lines & Data Labels
     // =============================================================
     let chart;
     const ctx = document.getElementById('progressChart').getContext('2d');
-    const chartMesSelect = document.getElementById('chartMes');
-    const chartDiaSelect = document.getElementById('chartDia');
-    const chartEjercicioSelect = document.getElementById('chartEjercicio');
-    const chartSerieSelect = document.getElementById('chartSerie');
+    const chartMonth = document.getElementById('chartMonth');
+    const chartDay = document.getElementById('chartDay');
+    const chartExercise = document.getElementById('chartExercise');
+    const chartSet = document.getElementById('chartSet');
     const updateChartBtn = document.getElementById('updateChartBtn');
-    chartMesSelect.addEventListener('change', () => {
-      chartDiaSelect.innerHTML = '<option value="">Seleccione Día</option>';
-      chartEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
-      const mes = chartMesSelect.value;
-      if (routine[mes]) {
-        const dias = Object.keys(routine[mes]);
-        dias.forEach(d => {
+    chartMonth.addEventListener('change', () => {
+      chartDay.innerHTML = '<option value="">Select Day</option>';
+      chartExercise.innerHTML = '<option value="">Select Exercise</option>';
+      const month = chartMonth.value;
+      if (routine[month]) {
+        const days = Object.keys(routine[month]);
+        days.forEach(d => {
           const opt = document.createElement('option');
           opt.value = d;
           opt.textContent = d;
-          chartDiaSelect.appendChild(opt);
+          chartDay.appendChild(opt);
         });
       }
     });
-    chartDiaSelect.addEventListener('change', () => {
-      chartEjercicioSelect.innerHTML = '<option value="">Seleccione Ejercicio</option>';
-      const mes = chartMesSelect.value;
-      const dia = chartDiaSelect.value;
-      if (routine[mes] && routine[mes][dia]) {
-        routine[mes][dia].forEach(e => {
+    chartDay.addEventListener('change', () => {
+      chartExercise.innerHTML = '<option value="">Select Exercise</option>';
+      const month = chartMonth.value;
+      const day = chartDay.value;
+      if (routine[month] && routine[month][day]) {
+        routine[month][day].forEach(e => {
           const opt = document.createElement('option');
           opt.value = e.nombre;
           opt.textContent = e.nombre;
-          chartEjercicioSelect.appendChild(opt);
+          chartExercise.appendChild(opt);
         });
       }
     });
@@ -777,16 +763,16 @@
       return all;
     }
     function updateChart() {
-      const selMes = chartMesSelect.value;
-      const selDia = chartDiaSelect.value;
-      const selEjercicio = chartEjercicioSelect.value;
-      const selSerie = chartSerieSelect.value;
+      const selMonth = chartMonth.value;
+      const selDay = chartDay.value;
+      const selExercise = chartExercise.value;
+      const selSet = chartSet.value;
       let all = getAllWorkouts();
-      if (selMes) all = all.filter(w => w.mes === selMes);
-      if (selDia) all = all.filter(w => w.dia === selDia);
-      if (selEjercicio) all = all.filter(w => w.ejercicio === selEjercicio);
-      if (!selSerie) {
-        alert("Selecciona una serie (1,2,3,4 o 5) para graficar.");
+      if (selMonth) all = all.filter(w => w.mes === selMonth);
+      if (selDay) all = all.filter(w => w.dia === selDay);
+      if (selExercise) all = all.filter(w => w.ejercicio === selExercise);
+      if (!selSet) {
+        alert("Please select a set (1,2,3,4, or 5) to chart.");
         return;
       }
       all.sort((a,b) => new Date(a.date) - new Date(b.date));
@@ -794,7 +780,7 @@
       const weightDataPoints = [];
       const repsDataPoints = [];
       all.forEach(w => {
-        const found = w.series.find(s => s.serie.toString() === selSerie);
+        const found = w.series.find(s => s.serie.toString() === selSet);
         if (found) {
           labels.push(w.date);
           weightDataPoints.push(parseFloat(found.peso));
@@ -808,7 +794,7 @@
           labels: labels,
           datasets: [
             {
-              label: 'Peso (kg)',
+              label: 'Weight (kg)',
               data: weightDataPoints,
               borderColor: 'rgba(75,192,192,1)',
               backgroundColor: 'rgba(75,192,192,0.2)',
@@ -817,7 +803,7 @@
               pointHoverRadius: 7
             },
             {
-              label: 'Repeticiones',
+              label: 'Reps',
               data: repsDataPoints,
               borderColor: 'rgba(192,75,75,1)',
               backgroundColor: 'rgba(192,75,75,0.2)',
@@ -843,13 +829,20 @@
           },
           scales: {
             x: {
-              title: { display: true, text: 'Fecha' }
+              title: { display: true, text: 'Date' }
             },
             y: {
-              title: { display: true, text: 'Valor' },
+              title: { display: true, text: 'Value' },
               suggestedMin: 0
             }
           }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+
         }
       });
     }
