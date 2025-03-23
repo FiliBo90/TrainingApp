@@ -13,10 +13,10 @@
   <!-- Plugin for data labels in Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
-  <!-- Extra styles for hero, transitions, accordions, and a few animations -->
+  <!-- Extra styles for hero, transitions, accordions, and rest timer bar -->
   <style>
     :root {
-      --max-rest-seconds: 120; /* for the rest timer progress bar */
+      --max-rest-seconds: 300; /* 5 minutes total for the rest timer */
     }
     .shadow-soft {
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -52,29 +52,9 @@
     .accordion-content.show {
       max-height: 800px;
     }
-    /* Dark mode classes (Tailwind toggling) */
-    .dark-mode {
-      background-color: #1f2937; /* gray-800 */
-      color: #f9fafb; /* gray-50 */
-    }
-    .dark-mode a, .dark-mode p, .dark-mode label {
-      color: #f9fafb !important;
-    }
-    .dark-mode .bg-white {
-      background-color: #374151 !important; /* gray-700 */
-    }
-    .dark-mode .text-gray-600 {
-      color: #d1d5db !important; /* gray-300 */
-    }
-    .dark-mode .bg-gray-50 {
-      background-color: #4b5563 !important; /* gray-600 */
-    }
-    .dark-mode .shadow-soft {
-      box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1) !important;
-    }
   </style>
 </head>
-<body class="bg-gray-100 flex flex-col min-h-screen transition-colors duration-300" id="bodyRoot">
+<body class="bg-gray-100 flex flex-col min-h-screen">
 
   <!-- Hero -->
   <section class="hero flex items-center justify-center mb-4">
@@ -92,11 +72,6 @@
     <button id="btnEditPlan" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
       Edit Workout Plan
     </button>
-    <!-- Dark Mode Toggle -->
-    <label class="flex items-center ml-4">
-      <input type="checkbox" id="darkModeToggle" class="mr-2" />
-      <span>Dark Mode</span>
-    </label>
   </header>
 
   <!-- Main Content -->
@@ -190,9 +165,16 @@
       <div class="bg-white shadow-soft rounded p-4 mb-6">
         <h2 class="text-xl font-bold mb-2">Rest Timer ⏱</h2>
         <p id="restTimerDisplay" class="text-2xl font-mono mb-2">00:00</p>
-        <!-- Progress bar for rest time -->
-        <div class="w-full bg-gray-300 h-2 mb-4">
-          <div id="restTimerBar" class="bg-green-500 h-2" style="width: 0%;"></div>
+        <!-- Progress bar for rest time with 5 dots (each minute) -->
+        <div class="relative w-full bg-gray-300 h-2 mb-4">
+          <!-- The green bar that fills over 300s -->
+          <div id="restTimerBar" class="bg-green-500 h-2 absolute left-0 top-0" style="width: 0%;"></div>
+          <!-- 5 dots for each minute (1 to 5) -->
+          <div class="absolute top-0 left-[20%] w-2 h-2 bg-black rounded-full -translate-x-1/2"></div>
+          <div class="absolute top-0 left-[40%] w-2 h-2 bg-black rounded-full -translate-x-1/2"></div>
+          <div class="absolute top-0 left-[60%] w-2 h-2 bg-black rounded-full -translate-x-1/2"></div>
+          <div class="absolute top-0 left-[80%] w-2 h-2 bg-black rounded-full -translate-x-1/2"></div>
+          <div class="absolute top-0 left-[100%] w-2 h-2 bg-black rounded-full -translate-x-1/2"></div>
         </div>
         <div class="flex space-x-2">
           <button id="startTimerBtn" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">Start</button>
@@ -292,20 +274,8 @@
 
   <!-- Main JavaScript -->
   <script>
-    // Register Chart.js DataLabels plugin
-    Chart.register(ChartDataLabels);
-
     // =============================================================
-    // 0. Dark Mode Toggle
-    // =============================================================
-    const bodyRoot = document.getElementById('bodyRoot');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    darkModeToggle.addEventListener('change', () => {
-      bodyRoot.classList.toggle('dark-mode');
-    });
-
-    // =============================================================
-    // 1. Editable Workout Plan Management (Load and Save in localStorage)
+    // 1. Load or create default routine
     // =============================================================
     let routine = loadRoutine();
     function loadRoutine() {
@@ -432,7 +402,7 @@
     }
 
     // =============================================================
-    // 2. Display Workout Plan (Programming)
+    // 2. Display Workout Plan
     // =============================================================
     const monthTabs = document.querySelectorAll('.monthTab');
     const planContent = document.getElementById('planContent');
@@ -485,7 +455,7 @@
     displayPlan("Month 1");
 
     // =============================================================
-    // 3. Navigation: Workout Plan / Progress / Edit Plan
+    // 3. Navigation
     // =============================================================
     const btnWorkoutPlan = document.getElementById('btnWorkoutPlan');
     const btnProgress = document.getElementById('btnProgress');
@@ -512,7 +482,7 @@
     });
 
     // =============================================================
-    // 4. Edit Workout Plan Section (User-Friendly Interface)
+    // 4. Edit Workout Plan Section
     // =============================================================
     const editMonthSelect = document.getElementById('editMonthSelect');
     const editDaySelect = document.getElementById('editDaySelect');
@@ -547,6 +517,9 @@
       }
       displayEditPlanList();
     }
+    // IMPORTANT: on day select change -> refresh list
+    editDaySelect.addEventListener('change', displayEditPlanList);
+
     function displayEditPlanList() {
       let month = editMonthSelect.value;
       let day = editDaySelect.value;
@@ -708,8 +681,7 @@
         const inputs = row.querySelectorAll('input');
         const repsRaw = inputs[0].value.trim();
         let weightRaw = inputs[1].value.trim();
-        // Replace comma with dot to allow "12,5" -> "12.5"
-        weightRaw = weightRaw.replace(',', '.');
+        weightRaw = weightRaw.replace(',', '.'); // allow 12,5 -> 12.5
         const repsParsed = parseInt(repsRaw, 10);
         const weightParsed = parseFloat(weightRaw);
 
@@ -728,11 +700,11 @@
         existingDay = { date: dateVal, workouts: [] };
         progress.push(existingDay);
       }
-      // Store the notes along with the workout
+      // Store the notes with the workout
       existingDay.workouts.push({ mes: monthVal, dia: dayVal, ejercicio: exerciseVal, series: sets, notes: notesVal });
       localStorage.setItem('gymProgress', JSON.stringify(progress));
 
-      // Reset form
+      // Reset
       progressForm.reset();
       setsContainer.innerHTML = '';
       addSetRow();
@@ -741,7 +713,7 @@
     });
 
     // =============================================================
-    // 6. Progress History with Volume, 1RM & Delete Option
+    // 6. Progress History with Volume & 1RM
     // =============================================================
     function loadProgressList() {
       const progressList = document.getElementById('progressList');
@@ -769,11 +741,10 @@
           w.series.forEach(s => {
             const volume = s.reps * s.peso;
             totalVolume += volume;
-            // Epley formula for 1RM: weight * (1 + reps/30)
+            // Epley formula
             const this1RM = s.peso * (1 + s.reps / 30);
-            if (this1RM > estimated1RM) estimated1RM = this1RM;
+            if(this1RM > estimated1RM) estimated1RM = this1RM;
           });
-          // Round 1RM to 1 decimal
           estimated1RM = Math.round(estimated1RM * 10) / 10;
 
           html += `
@@ -793,12 +764,11 @@
                 </button>
               </div>
               <div class="text-sm text-gray-600">
-                <p><strong>Total Volume:</strong> ${Math.round(totalVolume * 10) / 10} kg (reps*weight)</p>
+                <p><strong>Total Volume:</strong> ${Math.round(totalVolume * 10) / 10} kg</p>
                 <p><strong>Estimated 1RM (Epley):</strong> ${estimated1RM} kg</p>
               </div>
           `;
-          // If there are notes, show them
-          if (w.notes && w.notes.length > 0) {
+          if(w.notes && w.notes.length > 0) {
             html += `
               <div class="bg-gray-200 p-2 rounded text-sm">
                 <strong>Notes:</strong> ${w.notes}
@@ -829,9 +799,13 @@
     };
     loadProgressList();
 
-    // Export progress history as CSV (for Excel)
+    // Export progress history as CSV
     document.getElementById('exportProgressBtn').addEventListener('click', () => {
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
+      if(progress.length === 0) {
+        alert("No progress data to export.");
+        return;
+      }
       let csv = "Date,Month,Day,Exercise,Set,Reps,Weight,Notes\n";
       progress.forEach(day => {
         day.workouts.forEach(workout => {
@@ -850,7 +824,7 @@
       document.body.removeChild(a);
     });
 
-    // Share stats (using Web Share API if available)
+    // Share stats
     document.getElementById('shareStatsBtn').addEventListener('click', () => {
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
       if(progress.length === 0) {
@@ -861,7 +835,6 @@
       progress.forEach(day => {
         statsText += `Date: ${day.date}\n`;
         day.workouts.forEach((w,i) => {
-          // quick volume & 1RM calc
           let totalVolume = 0;
           let estimated1RM = 0;
           w.series.forEach(s => {
@@ -870,7 +843,7 @@
             if(this1RM > estimated1RM) estimated1RM = this1RM;
           });
           estimated1RM = Math.round(estimated1RM * 10) / 10;
-          statsText += `  #${i+1} ${w.mes} - ${w.dia} - ${w.ejercicio} [Volume: ${Math.round(totalVolume*10)/10}kg, 1RM: ${estimated1RM}kg]\n`;
+          statsText += `  #${i+1} ${w.mes} - ${w.dia} - ${w.ejercicio} [Vol: ${Math.round(totalVolume*10)/10}kg, 1RM: ${estimated1RM}kg]\n`;
           if(w.notes) {
             statsText += `   Notes: ${w.notes}\n`;
           }
@@ -885,12 +858,12 @@
           console.log("Share error:", err);
         });
       } else {
-        alert("Your browser does not support Web Share API. Here's your stats:\n\n" + statsText);
+        alert("Your browser doesn't support Web Share API. Here's your stats:\n\n" + statsText);
       }
     });
 
     // =============================================================
-    // 7. Rest Timer (Start, Pause, Reset) + Progress Bar
+    // 7. Rest Timer (300s) + Dots for Each Minute
     // =============================================================
     let restTime = 0;
     let restInterval = null;
@@ -903,8 +876,8 @@
       const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
       restTimerDisplay.textContent = formatted;
 
-      // Update progress bar (0-120 seconds)
-      const fraction = Math.min(restTime / parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-rest-seconds')), 1);
+      // Update progress bar (0-300 seconds)
+      const fraction = Math.min(restTime / 300, 1);
       restTimerBar.style.width = (fraction * 100) + "%";
     }
     function startRestTimer() {
@@ -1064,7 +1037,6 @@
         }
       });
     }
-
     // Save chart as image
     saveChartBtn.addEventListener('click', () => {
       if (!chart) {
