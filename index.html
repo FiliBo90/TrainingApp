@@ -13,8 +13,11 @@
   <!-- Plugin for data labels in Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
-  <!-- Extra styles for hero, transitions and accordions -->
+  <!-- Extra styles for hero, transitions, accordions, and a few animations -->
   <style>
+    :root {
+      --max-rest-seconds: 120; /* for the rest timer progress bar */
+    }
     .shadow-soft {
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
@@ -49,9 +52,29 @@
     .accordion-content.show {
       max-height: 800px;
     }
+    /* Dark mode classes (Tailwind toggling) */
+    .dark-mode {
+      background-color: #1f2937; /* gray-800 */
+      color: #f9fafb; /* gray-50 */
+    }
+    .dark-mode a, .dark-mode p, .dark-mode label {
+      color: #f9fafb !important;
+    }
+    .dark-mode .bg-white {
+      background-color: #374151 !important; /* gray-700 */
+    }
+    .dark-mode .text-gray-600 {
+      color: #d1d5db !important; /* gray-300 */
+    }
+    .dark-mode .bg-gray-50 {
+      background-color: #4b5563 !important; /* gray-600 */
+    }
+    .dark-mode .shadow-soft {
+      box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1) !important;
+    }
   </style>
 </head>
-<body class="bg-gray-100 flex flex-col min-h-screen">
+<body class="bg-gray-100 flex flex-col min-h-screen transition-colors duration-300" id="bodyRoot">
 
   <!-- Hero -->
   <section class="hero flex items-center justify-center mb-4">
@@ -59,7 +82,7 @@
   </section>
 
   <!-- Navigation Bar -->
-  <header class="bg-white shadow-soft p-4 flex justify-center space-x-4">
+  <header class="bg-white shadow-soft p-4 flex justify-center items-center space-x-4">
     <button id="btnWorkoutPlan" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
       Workout Plan
     </button>
@@ -69,6 +92,11 @@
     <button id="btnEditPlan" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
       Edit Workout Plan
     </button>
+    <!-- Dark Mode Toggle -->
+    <label class="flex items-center ml-4">
+      <input type="checkbox" id="darkModeToggle" class="mr-2" />
+      <span>Dark Mode</span>
+    </label>
   </header>
 
   <!-- Main Content -->
@@ -135,6 +163,11 @@
               ➕ Add Set
             </button>
           </div>
+          <!-- Notes -->
+          <div>
+            <label class="block mb-1 font-semibold">Workout Notes (feelings, etc.):</label>
+            <textarea id="progressNotes" class="w-full p-2 border rounded" rows="3"></textarea>
+          </div>
           <button type="submit" class="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             Save Progress 💾
           </button>
@@ -145,9 +178,27 @@
       <div class="bg-white shadow-soft rounded p-4 mb-6">
         <h2 class="text-xl font-bold mb-2">Progress History 📚</h2>
         <button id="exportProgressBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 mb-4">
-          Export History
+          Export History (CSV)
+        </button>
+        <button id="shareStatsBtn" class="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700 mb-4">
+          Share Stats
         </button>
         <div id="progressList" class="space-y-2"></div>
+      </div>
+
+      <!-- Rest Timer -->
+      <div class="bg-white shadow-soft rounded p-4 mb-6">
+        <h2 class="text-xl font-bold mb-2">Rest Timer ⏱</h2>
+        <p id="restTimerDisplay" class="text-2xl font-mono mb-2">00:00</p>
+        <!-- Progress bar for rest time -->
+        <div class="w-full bg-gray-300 h-2 mb-4">
+          <div id="restTimerBar" class="bg-green-500 h-2" style="width: 0%;"></div>
+        </div>
+        <div class="flex space-x-2">
+          <button id="startTimerBtn" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">Start</button>
+          <button id="pauseTimerBtn" class="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700">Pause</button>
+          <button id="resetTimerBtn" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">Reset</button>
+        </div>
       </div>
 
       <!-- Progress Chart -->
@@ -178,9 +229,14 @@
             <option value="5">Set 5</option>
           </select>
         </div>
-        <button id="updateChartBtn" class="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-          Update Chart 🔄
-        </button>
+        <div class="flex space-x-2 mb-4">
+          <button id="updateChartBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            Update Chart 🔄
+          </button>
+          <button id="saveChartBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Save Chart Image
+          </button>
+        </div>
         <canvas id="progressChart" class="w-full h-64"></canvas>
       </div>
     </section>
@@ -189,7 +245,7 @@
     <section id="editPlanSection" class="hidden p-4 max-w-5xl mx-auto w-full">
       <div class="bg-white shadow-soft rounded p-4">
         <h2 class="text-xl font-bold mb-2">Edit Workout Plan</h2>
-        <p class="text-gray-600 mb-4">Add or remove exercises from your workout plan without editing code.</p>
+        <p class="text-gray-600 mb-4">Add, remove, reorder exercises or delete entire days without editing code.</p>
         
         <div class="mb-4">
           <label class="block mb-1 font-semibold">Month:</label>
@@ -197,7 +253,10 @@
         </div>
         <div class="mb-4">
           <label class="block mb-1 font-semibold">Day:</label>
-          <select id="editDaySelect" class="w-full p-2 border rounded"></select>
+          <div class="flex items-center space-x-2">
+            <select id="editDaySelect" class="w-full p-2 border rounded"></select>
+            <button id="deleteDayBtn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Day</button>
+          </div>
         </div>
         <div class="mb-4">
           <label class="block mb-1 font-semibold">Exercise:</label>
@@ -237,6 +296,15 @@
     Chart.register(ChartDataLabels);
 
     // =============================================================
+    // 0. Dark Mode Toggle
+    // =============================================================
+    const bodyRoot = document.getElementById('bodyRoot');
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.addEventListener('change', () => {
+      bodyRoot.classList.toggle('dark-mode');
+    });
+
+    // =============================================================
     // 1. Editable Workout Plan Management (Load and Save in localStorage)
     // =============================================================
     let routine = loadRoutine();
@@ -248,110 +316,110 @@
         const defaultRoutine = {
           "Month 1": {
             "Day 1: PUSH": [
-              { nombre: "Warm-up: Shoulder & Chest Mobility", detalle: "5–10 min. Rotations, band pull-aparts, dynamic stretches" },
-              { nombre: "Barbell Bench Press", detalle: "4 x 5, Tempo: 2-0-1-0, Rest: 2–3 min. Alternative: Dumbbell Press" },
-              { nombre: "Barbell Overhead Press", detalle: "4 x 5, Tempo: 2-0-1-0, Rest: 2–3 min. Alternative: Arnold Press with Dumbbells" },
-              { nombre: "Incline Press (Barbell or Dumbbells)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec. Alternative: Incline Push-ups" },
-              { nombre: "Lateral Raises (Poliquin Style)", detalle: "3 x 12–14, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Triceps Extension (EZ-bar or Dumbbell)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec. Alternative: Assisted Dips" },
-              { nombre: "Core: Plank", detalle: "3 x 30–45 sec, Rest: 60 sec" }
+              { name: "Warm-up: Shoulder & Chest Mobility", detail: "5–10 min. Rotations, band pull-aparts, dynamic stretches" },
+              { name: "Barbell Bench Press", detail: "4 x 5, Tempo: 2-0-1-0, Rest: 2–3 min. Alternative: Dumbbell Press" },
+              { name: "Barbell Overhead Press", detail: "4 x 5, Tempo: 2-0-1-0, Rest: 2–3 min. Alternative: Arnold Press with Dumbbells" },
+              { name: "Incline Press (Barbell or Dumbbells)", detail: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec. Alternative: Incline Push-ups" },
+              { name: "Lateral Raises (Poliquin Style)", detail: "3 x 12–14, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Triceps Extension (EZ-bar or Dumbbell)", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec. Alternative: Assisted Dips" },
+              { name: "Core: Plank", detail: "3 x 30–45 sec, Rest: 60 sec" }
             ],
             "Day 2: PULL": [
-              { nombre: "Warm-up: Shoulder & Back Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
-              { nombre: "Pull-ups (assisted or free)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min. Alternative: Lat Pulldown" },
-              { nombre: "Barbell Row", detalle: "4 x 5–8, Tempo: 2-0-1-0, Rest: 2 min" },
-              { nombre: "Band Face Pulls", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "EZ-bar Bicep Curl", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Dumbbell Reverse Flys", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" }
+              { name: "Warm-up: Shoulder & Back Mobility", detail: "5–10 min. Rotations, band pull-aparts" },
+              { name: "Pull-ups (assisted or free)", detail: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min. Alternative: Lat Pulldown" },
+              { name: "Barbell Row", detail: "4 x 5–8, Tempo: 2-0-1-0, Rest: 2 min" },
+              { name: "Band Face Pulls", detail: "3 x 10–12, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "EZ-bar Bicep Curl", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Dumbbell Reverse Flys", detail: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
             "Day 3: LEGS": [
-              { nombre: "Warm-up: Mobility, Foam Rolling & Activation", detalle: "5–10 min. Includes glute bridges" },
-              { nombre: "Box Squat", detalle: "4 x 5–8, Tempo: 3-0-1-0, Rest: 2–3 min" },
-              { nombre: "Hip Thrust", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Romanian Deadlift", detalle: "3 x 6–8, Tempo: 3-0-1-0, Rest: 2 min" },
-              { nombre: "Bulgarian Split Squat", detalle: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Stability: Band Walks or Clamshells", detalle: "3 x 15 steps per side, Rest: 60 sec" },
-              { nombre: "Calf Raises", detalle: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
+              { name: "Warm-up: Mobility, Foam Rolling & Activation", detail: "5–10 min. Includes glute bridges" },
+              { name: "Box Squat", detail: "4 x 5–8, Tempo: 3-0-1-0, Rest: 2–3 min" },
+              { name: "Hip Thrust", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Romanian Deadlift", detail: "3 x 6–8, Tempo: 3-0-1-0, Rest: 2 min" },
+              { name: "Bulgarian Split Squat", detail: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Stability: Band Walks or Clamshells", detail: "3 x 15 steps per side, Rest: 60 sec" },
+              { name: "Calf Raises", detail: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
             "Day 4: TOTAL BODY": [
-              { nombre: "Warm-up: General Mobility & Activation", detalle: "5–10 min" },
-              { nombre: "Landmine Squat to Press", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 2–3 min" },
-              { nombre: "Kettlebell Swing", detalle: "3 x 10, Explosive execution, Rest: 90 sec" },
-              { nombre: "Single-Leg Romanian Deadlift", detalle: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Pallof Press", detalle: "3 x 10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
-              { nombre: "Optional: Box Step Jump", detalle: "2 x 5 (each leg), Rest: 60 sec" }
+              { name: "Warm-up: General Mobility & Activation", detail: "5–10 min" },
+              { name: "Landmine Squat to Press", detail: "3 x 6–8, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { name: "Kettlebell Swing", detail: "3 x 10, Explosive execution, Rest: 90 sec" },
+              { name: "Single-Leg Romanian Deadlift", detail: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Pallof Press", detail: "3 x 10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
+              { name: "Optional: Box Step Jump", detail: "2 x 5 (each leg), Rest: 60 sec" }
             ]
           },
           "Month 2": {
             "Day 1: PUSH": [
-              { nombre: "Warm-up: Shoulder & Chest Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
-              { nombre: "Dumbbell Bench Press", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
-              { nombre: "Overhead Press (Barbell or Dumbbells)", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
-              { nombre: "Incline Dumbbell Press", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Dumbbell Lateral Raises", detalle: "3 x 12–14, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Bench Triceps Extension (Dumbbell)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Core: Side Plank", detalle: "3 x 30–45 sec, Rest: 60 sec" }
+              { name: "Warm-up: Shoulder & Chest Mobility", detail: "5–10 min. Rotations, band pull-aparts" },
+              { name: "Dumbbell Bench Press", detail: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { name: "Overhead Press (Barbell or Dumbbells)", detail: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { name: "Incline Dumbbell Press", detail: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Dumbbell Lateral Raises", detail: "3 x 12–14, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Bench Triceps Extension (Dumbbell)", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Core: Side Plank", detail: "3 x 30–45 sec, Rest: 60 sec" }
             ],
             "Day 2: PULL": [
-              { nombre: "Warm-up: Shoulder & Back Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
-              { nombre: "Pull-ups (supinated or mixed grip)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min" },
-              { nombre: "Single-Arm Dumbbell Row (bench-supported)", detalle: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min" },
-              { nombre: "Wide-Grip Cable Row (if available)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Alternating Dumbbell Bicep Curl", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Face Pulls with Band (varying angle)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" }
+              { name: "Warm-up: Shoulder & Back Mobility", detail: "5–10 min. Rotations, band pull-aparts" },
+              { name: "Pull-ups (supinated or mixed grip)", detail: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min" },
+              { name: "Single-Arm Dumbbell Row (bench-supported)", detail: "4 x 6–8, Tempo: 2-0-1-0, Rest: 2 min" },
+              { name: "Wide-Grip Cable Row (if available)", detail: "3 x 10–12, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Alternating Dumbbell Bicep Curl", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Face Pulls with Band (varying angle)", detail: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
             "Day 3: LEGS": [
-              { nombre: "Warm-up: Mobility, Foam Rolling & Activation", detalle: "5–10 min. Includes glute bridges" },
-              { nombre: "Front Squat", detalle: "4 x 5–8, Tempo: 3-0-1-0, Rest: 2–3 min" },
-              { nombre: "Hip Thrust (Barbell or Dumbbell)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Romanian Deadlift (Barbell or Dumbbell)", detalle: "3 x 6–8, Tempo: 3-0-1-0, Rest: 2 min" },
-              { nombre: "Walking Lunges", detalle: "3 x 8–10 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Stability: Band Clamshells", detalle: "3 x 15 steps per side, Rest: 60 sec" },
-              { nombre: "Calf Raises (standing or on press)", detalle: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
+              { name: "Warm-up: Mobility, Foam Rolling & Activation", detail: "5–10 min. Includes glute bridges" },
+              { name: "Front Squat", detail: "4 x 5–8, Tempo: 3-0-1-0, Rest: 2–3 min" },
+              { name: "Hip Thrust (Barbell or Dumbbell)", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Romanian Deadlift (Barbell or Dumbbell)", detail: "3 x 6–8, Tempo: 3-0-1-0, Rest: 2 min" },
+              { name: "Walking Lunges", detail: "3 x 8–10 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Stability: Band Clamshells", detail: "3 x 15 steps per side, Rest: 60 sec" },
+              { name: "Calf Raises (standing or on press)", detail: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
             "Day 4: TOTAL BODY": [
-              { nombre: "Warm-up: General Mobility & Activation", detalle: "5–10 min" },
-              { nombre: "Dumbbell Thruster", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 2–3 min" },
-              { nombre: "Kettlebell Swing (varying range)", detalle: "3 x 10, Explosive / Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Single-Leg Glute Bridge (Dumbbell)", detalle: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Pallof Press (with band or cable)", detalle: "3 x 10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
-              { nombre: "Optional: Dynamic Step-ups", detalle: "2 x 6–8 (each leg), Rest: 60 sec" }
+              { name: "Warm-up: General Mobility & Activation", detail: "5–10 min" },
+              { name: "Dumbbell Thruster", detail: "3 x 6–8, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { name: "Kettlebell Swing (varying range)", detail: "3 x 10, Explosive / Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Single-Arm Glute Bridge (Dumbbell)", detail: "3 x 8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Pallof Press (with band or cable)", detail: "3 x 10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
+              { name: "Optional: Dynamic Step-ups", detail: "2 x 6–8 (each leg), Rest: 60 sec" }
             ]
           },
           "Month 3": {
             "Day 1: PUSH": [
-              { nombre: "Warm-up: Shoulder & Chest Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
-              { nombre: "Barbell Bench Press – Heavy", detalle: "4 x 4–5, Tempo: 2-0-1-0, Rest: 2–3 min" },
-              { nombre: "Barbell Overhead Press – Heavy", detalle: "4 x 4–5, Tempo: 2-0-1-0, Rest: 2–3 min" },
-              { nombre: "Incline Press (Barbell or Dumbbells)", detalle: "3 x 5–6, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Lateral Raises (angle variation allowed)", detalle: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Dips (triceps-focused)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Core: Front & Side Plank (alternating)", detalle: "3 x 30–45 sec, Rest: 60 sec" }
+              { name: "Warm-up: Shoulder & Chest Mobility", detail: "5–10 min. Rotations, band pull-aparts" },
+              { name: "Barbell Bench Press – Heavy", detail: "4 x 4–5, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { name: "Barbell Overhead Press – Heavy", detail: "4 x 4–5, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { name: "Incline Press (Barbell or Dumbbells)", detail: "3 x 5–6, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Lateral Raises (angle variation allowed)", detail: "3 x 10–12, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Dips (triceps-focused)", detail: "3 x 6–8, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Core: Front & Side Plank (alternating)", detail: "3 x 30–45 sec, Rest: 60 sec" }
             ],
             "Day 2: PULL": [
-              { nombre: "Warm-up: Shoulder & Back Mobility", detalle: "5–10 min. Rotations, band pull-aparts" },
-              { nombre: "Pull-ups (preferably free, varying grips)", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2 min" },
-              { nombre: "T-Bar Row or Machine Row with T-Bar", detalle: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2 min" },
-              { nombre: "Face Pulls (with extra contraction emphasis)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "EZ-bar Bicep Curl", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 60 sec" },
-              { nombre: "Inverted Row on TRX or fixed bar (angled)", detalle: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" }
+              { name: "Warm-up: Shoulder & Back Mobility", detail: "5–10 min. Rotations, band pull-aparts" },
+              { name: "Pull-ups (free, varying grips)", detail: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2 min" },
+              { name: "T-Bar Row or Machine Row with T-Bar", detail: "4 x 5–6, Tempo: 2-0-1-0, Rest: 2 min" },
+              { name: "Face Pulls (extra contraction emphasis)", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "EZ-bar Bicep Curl", detail: "3 x 6–8, Tempo: 2-0-1-0, Rest: 60 sec" },
+              { name: "Inverted Row on TRX or fixed bar (angled)", detail: "3 x 8–10, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
             "Day 3: LEGS": [
-              { nombre: "Warm-up: Mobility, Foam Rolling & Activation", detalle: "5–10 min. Includes glute bridges" },
-              { nombre: "Front Squat or Hack Squat (depending on availability)", detalle: "4 x 4–6, Tempo: 3-0-1-0, Rest: 2–3 min" },
-              { nombre: "Hip Thrust (Barbell, heavy)", detalle: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Romanian Deadlift (Barbell or Dumbbell, controlled)", detalle: "3 x 5–6, Tempo: 3-0-1-0, Rest: 2 min" },
-              { nombre: "Reverse Lunges or Walking Lunges", detalle: "3 x 6–8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Stability: Band Clamshells or Lateral Band Walks", detalle: "3 x 15 steps per side, Rest: 60 sec" },
-              { nombre: "Calf Raises (standing or hack)", detalle: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
+              { name: "Warm-up: Mobility, Foam Rolling & Activation", detail: "5–10 min. Includes glute bridges" },
+              { name: "Front Squat or Hack Squat (depending on availability)", detail: "4 x 4–6, Tempo: 3-0-1-0, Rest: 2–3 min" },
+              { name: "Hip Thrust (Barbell, heavy)", detail: "3 x 6–8, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Romanian Deadlift (controlled)", detail: "3 x 5–6, Tempo: 3-0-1-0, Rest: 2 min" },
+              { name: "Reverse Lunges or Walking Lunges", detail: "3 x 6–8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Stability: Band Clamshells or Lateral Band Walks", detail: "3 x 15 steps per side, Rest: 60 sec" },
+              { name: "Calf Raises (standing or hack)", detail: "3 x 12–15, Tempo: 2-0-1-0, Rest: 60 sec" }
             ],
             "Day 4: TOTAL BODY": [
-              { nombre: "Warm-up: General Mobility & Activation", detalle: "5–10 min" },
-              { nombre: "Dumbbell Push Press or Barbell Push Press", detalle: "3 x 4–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
-              { nombre: "Kettlebell Swing or Alternative: Dumbbell Hip Hinge", detalle: "3 x 8–10, Explosive / Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Weighted Step-ups (on bench or platform)", detalle: "3 x 6–8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
-              { nombre: "Pallof Press (with band or cable, increased resistance)", detalle: "3 x 8–10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
-              { nombre: "Optional: Controlled Plyometric Jumps", detalle: "2 x 4–6 (each leg), Rest: 60 sec" }
+              { name: "Warm-up: General Mobility & Activation", detail: "5–10 min" },
+              { name: "Dumbbell Push Press or Barbell Push Press", detail: "3 x 4–6, Tempo: 2-0-1-0, Rest: 2–3 min" },
+              { name: "Kettlebell Swing or Dumbbell Hip Hinge", detail: "3 x 8–10, Explosive, Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Weighted Step-ups (on bench or platform)", detail: "3 x 6–8 (each leg), Tempo: 2-0-1-0, Rest: 90 sec" },
+              { name: "Pallof Press (with band or cable, increased resistance)", detail: "3 x 8–10 (each side), Tempo: 2-0-2-0, Rest: 60 sec" },
+              { name: "Optional: Controlled Plyometric Jumps", detail: "2 x 4–6 (each leg), Rest: 60 sec" }
             ]
           }
         };
@@ -393,8 +461,8 @@
         exercises.forEach(e => {
           html += `
             <div class="my-2">
-              <p class="font-semibold">${e.nombre}</p>
-              <p class="text-sm text-gray-600">${e.detalle}</p>
+              <p class="font-semibold">${e.name}</p>
+              <p class="text-sm text-gray-600">${e.detail}</p>
             </div>
           `;
         });
@@ -454,6 +522,7 @@
     const editPlanList = document.getElementById('editPlanList');
     const cancelEditPlan = document.getElementById('cancelEditPlan');
     const savePlanBtn = document.getElementById('savePlanBtn');
+    const deleteDayBtn = document.getElementById('deleteDayBtn');
 
     function populateEditMonth() {
       editMonthSelect.innerHTML = '';
@@ -486,21 +555,42 @@
         routine[month][day].forEach((exercise, index) => {
           let div = document.createElement('div');
           div.className = 'flex justify-between items-center border p-2 mb-2';
-          div.innerHTML = `<div>
-                              <p class="font-semibold">${exercise.nombre}</p>
-                              <p class="text-sm text-gray-600">${exercise.detalle}</p>
-                           </div>
-                           <button class="bg-red-500 text-white px-2 rounded hover:bg-red-600" onclick="deleteExercise('${month}', '${day}', ${index})">Delete</button>`;
+          div.innerHTML = `
+            <div>
+              <p class="font-semibold">${exercise.name}</p>
+              <p class="text-sm text-gray-600">${exercise.detail}</p>
+            </div>
+            <div class="flex space-x-2">
+              <button class="bg-gray-300 px-2 rounded" onclick="moveExerciseUp('${month}', '${day}', ${index})">▲</button>
+              <button class="bg-gray-300 px-2 rounded" onclick="moveExerciseDown('${month}', '${day}', ${index})">▼</button>
+              <button class="bg-red-500 text-white px-2 rounded hover:bg-red-600" onclick="deleteExercise('${month}', '${day}', ${index})">Delete</button>
+            </div>
+          `;
           editPlanList.appendChild(div);
         });
       }
     }
+    // Reordering
+    window.moveExerciseUp = function(month, day, index) {
+      if(index > 0) {
+        const arr = routine[month][day];
+        [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
+        displayEditPlanList();
+      }
+    };
+    window.moveExerciseDown = function(month, day, index) {
+      const arr = routine[month][day];
+      if(index < arr.length - 1) {
+        [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
+        displayEditPlanList();
+      }
+    };
+    // Delete exercise
     window.deleteExercise = function(month, day, index) {
       routine[month][day].splice(index, 1);
       displayEditPlanList();
-    }
-    editMonthSelect.addEventListener('change', populateEditDay);
-    editDaySelect.addEventListener('change', displayEditPlanList);
+    };
+    // Add exercise
     addExerciseBtn.addEventListener('click', () => {
       let month = editMonthSelect.value;
       let day = editDaySelect.value;
@@ -516,10 +606,22 @@
       if(!routine[month][day]) {
         routine[month][day] = [];
       }
-      routine[month][day].push({nombre: name, detalle: detail});
+      routine[month][day].push({name, detail});
       editExerciseName.value = '';
       editExerciseDetail.value = '';
       displayEditPlanList();
+    });
+    // Delete entire day
+    deleteDayBtn.addEventListener('click', () => {
+      let month = editMonthSelect.value;
+      let day = editDaySelect.value;
+      if(!routine[month] || !routine[month][day]) {
+        alert("Invalid day selection.");
+        return;
+      }
+      if(!confirm(`Are you sure you want to delete "${day}" from "${month}"?`)) return;
+      delete routine[month][day];
+      populateEditDay();
     });
     savePlanBtn.addEventListener('click', () => {
       saveRoutine();
@@ -540,8 +642,11 @@
     const progressDay = document.getElementById('progressDay');
     const progressExercise = document.getElementById('progressExercise');
     const setsContainer = document.getElementById('setsContainer');
+    const progressNotes = document.getElementById('progressNotes');
+
     progressMonth.addEventListener('change', populateProgressDay);
     progressDay.addEventListener('change', populateProgressExercise);
+
     function populateProgressDay() {
       progressDay.innerHTML = '<option value="">Select Day</option>';
       progressExercise.innerHTML = '<option value="">Select Exercise</option>';
@@ -563,8 +668,8 @@
       if (month && day && routine[month] && routine[month][day]) {
         routine[month][day].forEach(e => {
           const option = document.createElement('option');
-          option.value = e.nombre;
-          option.textContent = e.nombre;
+          option.value = e.name;
+          option.textContent = e.name;
           progressExercise.appendChild(option);
         });
       }
@@ -573,8 +678,8 @@
       const row = document.createElement('div');
       row.className = 'flex space-x-2';
       row.innerHTML = `
-        <input type="number" placeholder="Reps" class="w-1/2 p-2 border rounded" required>
-        <input type="number" placeholder="Weight (kg)" class="w-1/2 p-2 border rounded" required>
+        <input type="number" step="any" placeholder="Reps" class="w-1/2 p-2 border rounded" required>
+        <input type="number" step="any" placeholder="Weight (kg)" class="w-1/2 p-2 border rounded" required>
         <button type="button" class="bg-red-500 text-white px-2 rounded hover:bg-red-600">🗑</button>
       `;
       const delBtn = row.querySelector('button');
@@ -584,12 +689,15 @@
     document.getElementById('addSetBtn').addEventListener('click', addSetRow);
     // Initial row
     addSetRow();
+
     progressForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const dateVal = progressDate.value;
       const monthVal = progressMonth.value;
       const dayVal = progressDay.value;
       const exerciseVal = progressExercise.value;
+      const notesVal = progressNotes.value.trim();
+
       if (!dateVal || !monthVal || !dayVal || !exerciseVal) {
         alert("Please complete Date, Month, Day, and Exercise.");
         return;
@@ -598,24 +706,32 @@
       let sets = [];
       rows.forEach((row, i) => {
         const inputs = row.querySelectorAll('input');
-        const reps = inputs[0].value;
-        const weight = inputs[1].value;
-        if (reps && weight) {
-          sets.push({ serie: i+1, reps, peso: weight });
+        const repsRaw = inputs[0].value.trim();
+        let weightRaw = inputs[1].value.trim();
+        // Replace comma with dot to allow "12,5" -> "12.5"
+        weightRaw = weightRaw.replace(',', '.');
+        const repsParsed = parseInt(repsRaw, 10);
+        const weightParsed = parseFloat(weightRaw);
+
+        if (!isNaN(repsParsed) && !isNaN(weightParsed)) {
+          sets.push({ serie: i+1, reps: repsParsed, peso: weightParsed });
         }
       });
       if (sets.length === 0) {
         alert("Please add at least one valid set.");
         return;
       }
+
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
       let existingDay = progress.find(d => d.date === dateVal);
       if (!existingDay) {
         existingDay = { date: dateVal, workouts: [] };
         progress.push(existingDay);
       }
-      existingDay.workouts.push({ mes: monthVal, dia: dayVal, ejercicio: exerciseVal, series: sets });
+      // Store the notes along with the workout
+      existingDay.workouts.push({ mes: monthVal, dia: dayVal, ejercicio: exerciseVal, series: sets, notes: notesVal });
       localStorage.setItem('gymProgress', JSON.stringify(progress));
+
       // Reset form
       progressForm.reset();
       setsContainer.innerHTML = '';
@@ -625,7 +741,7 @@
     });
 
     // =============================================================
-    // 6. Progress History with Delete Option
+    // 6. Progress History with Volume, 1RM & Delete Option
     // =============================================================
     function loadProgressList() {
       const progressList = document.getElementById('progressList');
@@ -647,22 +763,49 @@
             <div class="ml-6 hidden">
         `;
         day.workouts.forEach((w,i) => {
+          // Calculate total volume & 1RM
+          let totalVolume = 0;
+          let estimated1RM = 0;
+          w.series.forEach(s => {
+            const volume = s.reps * s.peso;
+            totalVolume += volume;
+            // Epley formula for 1RM: weight * (1 + reps/30)
+            const this1RM = s.peso * (1 + s.reps / 30);
+            if (this1RM > estimated1RM) estimated1RM = this1RM;
+          });
+          // Round 1RM to 1 decimal
+          estimated1RM = Math.round(estimated1RM * 10) / 10;
+
           html += `
-            <div class="bg-gray-50 rounded p-2 my-2 flex justify-between items-center">
-              <div>
-                <p class="font-semibold text-sm">Workout #${i+1}: ${w.mes}, ${w.dia}, Exercise: ${w.ejercicio}</p>
-                <ul class="list-disc ml-4 text-sm">
+            <div class="bg-gray-50 rounded p-2 my-2 flex flex-col space-y-2">
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="font-semibold text-sm">Workout #${i+1}: ${w.mes}, ${w.dia}, Exercise: ${w.ejercicio}</p>
+                  <ul class="list-disc ml-4 text-sm">
           `;
           w.series.forEach(s => {
             html += `<li>Set ${s.serie}: ${s.reps} reps, ${s.peso} kg</li>`;
           });
           html += `</ul>
+                </div>
+                <button onclick="deleteWorkout('${day.date}', ${i})" class="bg-red-500 text-white px-2 rounded hover:bg-red-600">
+                  Delete
+                </button>
               </div>
-              <button onclick="deleteWorkout('${day.date}', ${i})" class="bg-red-500 text-white px-2 rounded hover:bg-red-600">
-                Delete
-              </button>
-            </div>
+              <div class="text-sm text-gray-600">
+                <p><strong>Total Volume:</strong> ${Math.round(totalVolume * 10) / 10} kg (reps*weight)</p>
+                <p><strong>Estimated 1RM (Epley):</strong> ${estimated1RM} kg</p>
+              </div>
           `;
+          // If there are notes, show them
+          if (w.notes && w.notes.length > 0) {
+            html += `
+              <div class="bg-gray-200 p-2 rounded text-sm">
+                <strong>Notes:</strong> ${w.notes}
+              </div>
+            `;
+          }
+          html += `</div>`;
         });
         html += `</div></div>`;
       });
@@ -671,7 +814,7 @@
     function toggleHistory(el) {
       el.classList.toggle('hidden');
     }
-    function deleteWorkout(date, workoutIndex) {
+    window.deleteWorkout = function(date, workoutIndex) {
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
       let dayRecord = progress.find(d => d.date === date);
       if(dayRecord) {
@@ -683,17 +826,17 @@
         loadProgressList();
         updateChart();
       }
-    }
+    };
     loadProgressList();
 
     // Export progress history as CSV (for Excel)
     document.getElementById('exportProgressBtn').addEventListener('click', () => {
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
-      let csv = "Date,Month,Day,Exercise,Set,Reps,Weight\n";
+      let csv = "Date,Month,Day,Exercise,Set,Reps,Weight,Notes\n";
       progress.forEach(day => {
         day.workouts.forEach(workout => {
           workout.series.forEach(set => {
-            csv += `"${day.date}","${workout.mes}","${workout.dia}","${workout.ejercicio}",${set.serie},${set.reps},${set.peso}\n`;
+            csv += `"${day.date}","${workout.mes}","${workout.dia}","${workout.ejercicio}",${set.serie},${set.reps},${set.peso},"${workout.notes || ''}"\n`;
           });
         });
       });
@@ -707,8 +850,87 @@
       document.body.removeChild(a);
     });
 
+    // Share stats (using Web Share API if available)
+    document.getElementById('shareStatsBtn').addEventListener('click', () => {
+      let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
+      if(progress.length === 0) {
+        alert("No stats to share yet!");
+        return;
+      }
+      let statsText = "My Gym Progress:\n\n";
+      progress.forEach(day => {
+        statsText += `Date: ${day.date}\n`;
+        day.workouts.forEach((w,i) => {
+          // quick volume & 1RM calc
+          let totalVolume = 0;
+          let estimated1RM = 0;
+          w.series.forEach(s => {
+            totalVolume += s.reps * s.peso;
+            const this1RM = s.peso * (1 + s.reps / 30);
+            if(this1RM > estimated1RM) estimated1RM = this1RM;
+          });
+          estimated1RM = Math.round(estimated1RM * 10) / 10;
+          statsText += `  #${i+1} ${w.mes} - ${w.dia} - ${w.ejercicio} [Volume: ${Math.round(totalVolume*10)/10}kg, 1RM: ${estimated1RM}kg]\n`;
+          if(w.notes) {
+            statsText += `   Notes: ${w.notes}\n`;
+          }
+        });
+        statsText += "\n";
+      });
+      if(navigator.share) {
+        navigator.share({
+          title: "My Gym Progress",
+          text: statsText
+        }).catch((err) => {
+          console.log("Share error:", err);
+        });
+      } else {
+        alert("Your browser does not support Web Share API. Here's your stats:\n\n" + statsText);
+      }
+    });
+
     // =============================================================
-    // 7. Progress Chart (Chart.js) with Two Lines & Data Labels
+    // 7. Rest Timer (Start, Pause, Reset) + Progress Bar
+    // =============================================================
+    let restTime = 0;
+    let restInterval = null;
+    const restTimerDisplay = document.getElementById('restTimerDisplay');
+    const restTimerBar = document.getElementById('restTimerBar');
+
+    function updateRestTimerDisplay() {
+      const minutes = Math.floor(restTime / 60);
+      const seconds = restTime % 60;
+      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      restTimerDisplay.textContent = formatted;
+
+      // Update progress bar (0-120 seconds)
+      const fraction = Math.min(restTime / parseInt(getComputedStyle(document.documentElement).getPropertyValue('--max-rest-seconds')), 1);
+      restTimerBar.style.width = (fraction * 100) + "%";
+    }
+    function startRestTimer() {
+      if (!restInterval) {
+        restInterval = setInterval(() => {
+          restTime++;
+          updateRestTimerDisplay();
+        }, 1000);
+      }
+    }
+    function pauseRestTimer() {
+      if (restInterval) {
+        clearInterval(restInterval);
+        restInterval = null;
+      }
+    }
+    function resetRestTimer() {
+      restTime = 0;
+      updateRestTimerDisplay();
+    }
+    document.getElementById('startTimerBtn').addEventListener('click', startRestTimer);
+    document.getElementById('pauseTimerBtn').addEventListener('click', pauseRestTimer);
+    document.getElementById('resetTimerBtn').addEventListener('click', resetRestTimer);
+
+    // =============================================================
+    // 8. Progress Chart (Chart.js) with Two Lines & Data Labels
     // =============================================================
     let chart;
     const ctx = document.getElementById('progressChart').getContext('2d');
@@ -717,6 +939,8 @@
     const chartExercise = document.getElementById('chartExercise');
     const chartSet = document.getElementById('chartSet');
     const updateChartBtn = document.getElementById('updateChartBtn');
+    const saveChartBtn = document.getElementById('saveChartBtn');
+
     chartMonth.addEventListener('change', () => {
       chartDay.innerHTML = '<option value="">Select Day</option>';
       chartExercise.innerHTML = '<option value="">Select Exercise</option>';
@@ -738,13 +962,14 @@
       if (routine[month] && routine[month][day]) {
         routine[month][day].forEach(e => {
           const opt = document.createElement('option');
-          opt.value = e.nombre;
-          opt.textContent = e.nombre;
+          opt.value = e.name;
+          opt.textContent = e.name;
           chartExercise.appendChild(opt);
         });
       }
     });
     updateChartBtn.addEventListener('click', updateChart);
+
     function getAllWorkouts() {
       let progress = JSON.parse(localStorage.getItem('gymProgress')) || [];
       const all = [];
@@ -839,13 +1064,18 @@
         }
       });
     }
-  </script>
-</body>
-</html>
 
-        }
-      });
-    }
+    // Save chart as image
+    saveChartBtn.addEventListener('click', () => {
+      if (!chart) {
+        alert("No chart to save. Please update the chart first.");
+        return;
+      }
+      const link = document.createElement('a');
+      link.download = 'progressChart.png';
+      link.href = chart.toBase64Image();
+      link.click();
+    });
   </script>
 </body>
 </html>
